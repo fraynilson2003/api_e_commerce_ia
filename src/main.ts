@@ -9,7 +9,7 @@ dotenv.config();
 async function bootstrap() {
   dotenv.config();
 
-  const PORT = Number(process.env.PORT || 3000);
+  const PORT = Number(process.env.PORT || 4000);
 
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(

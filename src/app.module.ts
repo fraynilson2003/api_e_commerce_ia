@@ -3,10 +3,11 @@ import { dbConfig } from './config/database';
 import { CategoryModule } from './modules/category/category.module';
 import { ProductModule } from './modules/product/product.module';
 import { APP_FILTER } from '@nestjs/core';
-import { TypeORMExceptionFilter } from './global/custom-execption';
+import { TypeORMExceptionFilter } from './global/customExecption';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
-  imports: [dbConfig, ProductModule, CategoryModule],
+  imports: [dbConfig, ProductModule, CategoryModule, UserModule],
   controllers: [],
   providers: [
     {

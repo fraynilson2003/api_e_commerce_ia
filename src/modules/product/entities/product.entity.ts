@@ -10,4 +10,7 @@ export class ProductEntity {
 
   @Column({ type: 'text', nullable: true })
   description?: string;
+
+  @Column({ type: 'float', nullable: false })
+  price: number;
 }

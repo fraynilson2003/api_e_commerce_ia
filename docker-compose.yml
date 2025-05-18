@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  api_ecommerce:
+    image: postgres:16
+    container_name: api_ecommerce
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: api_ecommerce
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "4005:5432"
+
+volumes:
+  pgdata:
