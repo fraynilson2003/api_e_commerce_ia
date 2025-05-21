@@ -1,26 +1,35 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { EmployeeService } from './user.service';
+import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Actions } from '../ability/ability.factory';
-import { UserEntity } from './entities/user.entity';
-import { CheckAbilities } from '../ability/ability.decorator';
-import { AbilitiesGuard } from '../ability/abilitites.guard';
+import { PermissionEmployee } from '../permission/decorator/permissionEmployee.decorator';
+import { LoginUserDto } from './dto/loginUser.dto';
 
 @ApiTags('user')
 @Controller('user')
-export class EmployeeController {
-  constructor(private readonly employeeService: EmployeeService) {}
+export class UserController {
+  constructor(private readonly userService: UserService) {}
 
-  @Post()
+  @Post('register')
+  @PermissionEmployee({
+    type: 'user',
+    action: 'create',
+  })
   async createUser(@Body() input: CreateUserDto) {
-    return this.employeeService.createUser(input);
+    return this.userService.createUser(input);
+  }
+
+  @Post('login')
+  async login(@Body() input: LoginUserDto) {
+    return this.userService.login(input);
   }
 
   @Get()
-  @CheckAbilities({ actions: Actions.Delete, subject: UserEntity })
-  @UseGuards(AbilitiesGuard)
+  @PermissionEmployee({
+    type: 'user',
+    action: 'read',
+  })
   async findAll() {
-    return this.employeeService.findAll();
+    return this.userService.findAll();
   }
 }

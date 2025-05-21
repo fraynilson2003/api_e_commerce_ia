@@ -5,9 +5,22 @@ import { ProductModule } from './modules/product/product.module';
 import { APP_FILTER } from '@nestjs/core';
 import { TypeORMExceptionFilter } from './global/customExecption';
 import { UserModule } from './modules/user/user.module';
+import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [dbConfig, ProductModule, CategoryModule, UserModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // Hace que las variables estén disponibles globalmente
+    }),
+    JwtModule.register({
+      global: true,
+    }),
+    dbConfig,
+    ProductModule,
+    CategoryModule,
+    UserModule,
+  ],
   controllers: [],
   providers: [
     {

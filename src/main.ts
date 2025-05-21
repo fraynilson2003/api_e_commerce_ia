@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as morgan from 'morgan';
 
 dotenv.config();
 
@@ -34,6 +35,8 @@ async function bootstrap() {
       persistAuthorization: true,
     },
   });
+
+  app.use(morgan('dev'));
 
   await app.listen(PORT);
   console.log(`************ Server Running on Port ${PORT} ************`);

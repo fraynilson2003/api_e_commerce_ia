@@ -8,5 +8,5 @@ export const dbConfig = TypeOrmModule.forRoot({
   entities: [__dirname + './../modules/**/entities/*.entity{.ts,.js}'],
   synchronize: true,
 
-  //dropSchema: true,
+  // dropSchema: true,
 });
