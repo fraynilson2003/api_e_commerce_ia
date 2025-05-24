@@ -11,10 +11,10 @@ import { Reflector } from '@nestjs/core';
 import {
   PERMISSION_EMPLOYEE_KEY,
   PermissionRules,
-} from '../decorator/rulesPermissionEmployee.decorator';
+} from '../decorator/rulesPermission.decorator';
 
 @Injectable()
-export class PermissionEmployeeGuard implements CanActivate {
+export class PermissionGuard implements CanActivate {
   constructor(
     private readonly userService: UserService,
     private reflector: Reflector,

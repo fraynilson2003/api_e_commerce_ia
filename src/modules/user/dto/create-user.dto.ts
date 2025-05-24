@@ -1,5 +1,4 @@
 import {
-  IsBoolean,
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -8,8 +7,6 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserEntity } from '../entities/user.entity';
-import { PermissionEmployee } from 'src/modules/permission/permissionEmployee.interface';
-import { defaultPermissionEmployee } from 'src/modules/permission/defaultUser';
 
 export class CreateUserDto implements Partial<UserEntity> {
   @IsNotEmpty()
@@ -35,13 +32,6 @@ export class CreateUserDto implements Partial<UserEntity> {
   password: string;
 
   @IsNotEmpty()
-  @ApiProperty({
-    type: Object,
-    example: defaultPermissionEmployee,
-  })
-  permissions?: PermissionEmployee;
-
-  @IsNotEmpty()
   @IsString()
   @MaxLength(50)
   @ApiProperty({
@@ -61,7 +51,6 @@ export class CreateUserDto implements Partial<UserEntity> {
 
   @IsOptional()
   @IsNotEmpty()
-  @IsBoolean()
   @ApiPropertyOptional({
     type: Boolean,
     example: false,

@@ -20,6 +20,11 @@ async function bootstrap() {
       transform: true, // Transforma la entrada a su tipo correspondiente según el DTO
     }),
   );
+  app.enableCors({
+    origin: ['http://localhost:3000'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
 
   app.setGlobalPrefix('api');
 

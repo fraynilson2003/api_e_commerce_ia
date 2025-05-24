@@ -1,5 +1,6 @@
-import { PermissionEmployee } from 'src/modules/permission/permissionEmployee.interface';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { OrderEntity } from 'src/modules/order/entities/order.entity';
+import { PermissionUser } from '@src/modules/permission/permissionUser.interface';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('user')
 export class UserEntity {
@@ -28,5 +29,11 @@ export class UserEntity {
   lastName: string;
 
   @Column({ type: 'json', nullable: false })
-  permissions: PermissionEmployee;
+  permissions: PermissionUser;
+
+  @OneToMany(() => OrderEntity, (order) => order.user)
+  orders: OrderEntity[];
+
+  @OneToMany(() => OrderEntity, (order) => order.employee)
+  ordersEmployee: OrderEntity[];
 }

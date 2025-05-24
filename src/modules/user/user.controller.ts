@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { PermissionEmployee } from '../permission/decorator/permissionEmployee.decorator';
+import { PermissionAuth } from '../permission/decorator/permissionAuth.decorator';
 import { LoginUserDto } from './dto/loginUser.dto';
 
 @ApiTags('user')
@@ -11,10 +11,6 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('register')
-  @PermissionEmployee({
-    type: 'user',
-    action: 'create',
-  })
   async createUser(@Body() input: CreateUserDto) {
     return this.userService.createUser(input);
   }
@@ -25,7 +21,7 @@ export class UserController {
   }
 
   @Get()
-  @PermissionEmployee({
+  @PermissionAuth({
     type: 'user',
     action: 'read',
   })

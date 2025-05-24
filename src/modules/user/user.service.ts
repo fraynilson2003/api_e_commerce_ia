@@ -10,6 +10,7 @@ import { LoginUserDto } from './dto/loginUser.dto';
 import * as bcryptjs from 'bcryptjs';
 import { UserToken } from './userToken.interface';
 import { expirationToken } from './timeExpiration';
+import { defaultPermissionUser } from './defaultPermissionUser';
 
 @Injectable()
 export class UserService {
@@ -41,7 +42,7 @@ export class UserService {
   async findOneUserPermission(id: number) {
     return this.userRepository.findOne({
       where: { id },
-      select: ['id', 'permissions'],
+      select: ['id', 'permissions', 'isAdmin'],
     });
   }
 
@@ -95,7 +96,7 @@ export class UserService {
     const salt = await bcryptjs.genSalt(10);
     const hashPassword = await bcryptjs.hash(input.password, salt);
 
-    const user = this.userRepository.create({
+    const createUser = this.userRepository.create({
       email: input.email,
       username: input.username,
       salt: salt,
@@ -103,8 +104,10 @@ export class UserService {
       firstName: input.firstName,
       isAdmin: input.isAdmin,
       lastName: input.lastName,
-      permissions: input.permissions,
+      permissions: defaultPermissionUser,
     });
+
+    const user = await this.userRepository.save(createUser);
 
     const token = await this.generateToken({
       email: user.email,

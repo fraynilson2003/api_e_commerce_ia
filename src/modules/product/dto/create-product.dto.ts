@@ -1,12 +1,13 @@
 import {
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   MaxLength,
   MinLength,
 } from 'class-validator';
 import { ProductEntity } from '../entities/product.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 
 export class CreateProductDto implements Partial<ProductEntity> {
@@ -30,11 +31,18 @@ export class CreateProductDto implements Partial<ProductEntity> {
   })
   description?: string;
 
-  @Transform(({ value }) => parseFloat(value))
   @IsNotEmpty()
+  @IsNumber()
+  @Transform(({ value }) => parseFloat(value))
   @ApiProperty({
     type: Number,
-    example: '14.50',
+    example: 14.5,
   })
   price: number;
+
+  @ApiPropertyOptional({
+    type: 'string',
+    format: 'binary',
+  })
+  image?: any;
 }

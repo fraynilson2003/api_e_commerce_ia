@@ -1,4 +1,4 @@
-export interface PermissionEmployee {
+export interface PermissionUser {
   user: {
     read: boolean;
     create: boolean;
@@ -9,5 +9,9 @@ export interface PermissionEmployee {
     create: boolean;
     update: boolean;
     delete: boolean;
+  };
+  order: {
+    createMyOrder: boolean;
+    createOtherOrder: boolean;
   };
 }

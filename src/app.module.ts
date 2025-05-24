@@ -7,6 +7,10 @@ import { TypeORMExceptionFilter } from './global/customExecption';
 import { UserModule } from './modules/user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { OrderModule } from './modules/order/order.module';
+import { UtilitiesModule } from './global/utilities.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
+import { StripeModule } from './modules/stripe/stripe.module';
 
 @Module({
   imports: [
@@ -20,6 +24,10 @@ import { JwtModule } from '@nestjs/jwt';
     ProductModule,
     CategoryModule,
     UserModule,
+    OrderModule,
+    UtilitiesModule,
+    CloudinaryModule,
+    StripeModule,
   ],
   controllers: [],
   providers: [
