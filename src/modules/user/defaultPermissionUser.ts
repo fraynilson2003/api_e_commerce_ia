@@ -15,5 +15,13 @@ export const defaultPermissionUser: PermissionUser = {
   order: {
     createMyOrder: true,
     createOtherOrder: false,
+    deleteOtherOrder: false,
+    editMyOrder: true,
+    editOtherOrder: false,
+  },
+  shoppingCart: {
+    editMyCart: true,
+    editOtherCart: false,
+    read: true,
   },
 };

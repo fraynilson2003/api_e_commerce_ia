@@ -10,7 +10,7 @@ import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { PermissionAuth } from '../permission/decorator/permissionAuth.decorator';
+import { AuthPermission } from '../permission/decorator/authPermission';
 import { AddStockProductDto } from './dto/add-stock-product';
 
 @ApiTags('product')
@@ -39,7 +39,7 @@ export class ProductController {
   }
 
   @Post('add-stock')
-  @PermissionAuth({
+  @AuthPermission({
     type: 'category',
     action: 'create',
   })

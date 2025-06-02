@@ -14,11 +14,14 @@ export class OrderEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => UserEntity, (user) => user.orders)
+  @ManyToOne(() => UserEntity, (user) => user.orders, {
+    onDelete: 'CASCADE',
+  })
   user: UserEntity;
 
   @ManyToOne(() => UserEntity, (user) => user.ordersEmployee, {
     nullable: true,
+    onDelete: 'CASCADE',
   })
   employee?: UserEntity;
 
@@ -34,7 +37,9 @@ export class OrderEntity {
   @Column({ type: 'varchar', nullable: true })
   clientSecretPayment: string;
 
-  @OneToMany(() => OrderDetailEntity, (detail) => detail.order)
+  @OneToMany(() => OrderDetailEntity, (detail) => detail.order, {
+    onDelete: 'CASCADE',
+  })
   orderDetails: OrderDetailEntity[];
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })

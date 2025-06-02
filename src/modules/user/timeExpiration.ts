@@ -1,1 +1,1 @@
-export const expirationToken = '3d';
+export const expirationToken = '30d';

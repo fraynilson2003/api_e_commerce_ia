@@ -13,9 +13,13 @@ export class OrderDetailEntity {
   @Column({ type: 'float', nullable: true })
   priceSell: number;
 
-  @ManyToOne(() => ProductEntity, (p) => p.orderDetails)
+  @ManyToOne(() => ProductEntity, (p) => p.orderDetails, {
+    onDelete: 'CASCADE',
+  })
   product: ProductEntity;
 
-  @ManyToOne(() => OrderEntity, (order) => order.orderDetails)
+  @ManyToOne(() => OrderEntity, (order) => order.orderDetails, {
+    onDelete: 'CASCADE',
+  })
   order: OrderEntity;
 }

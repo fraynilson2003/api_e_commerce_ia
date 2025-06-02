@@ -1,14 +1,23 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { PermissionAuth } from '../permission/decorator/permissionAuth.decorator';
+import { AuthPermission } from '../permission/decorator/authPermission';
 import { LoginUserDto } from './dto/loginUser.dto';
 
 @ApiTags('user')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Get(':id')
+  @AuthPermission({
+    type: 'user',
+    action: 'read',
+  })
+  async getUserDetail(@Param('id') id: string) {
+    return await this.userService.getUserDetail(+id);
+  }
 
   @Post('register')
   async createUser(@Body() input: CreateUserDto) {
@@ -21,7 +30,7 @@ export class UserController {
   }
 
   @Get()
-  @PermissionAuth({
+  @AuthPermission({
     type: 'user',
     action: 'read',
   })

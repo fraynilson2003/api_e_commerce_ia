@@ -1,3 +1,4 @@
+import { ShoppingCartDetailEntity } from '@src/modules/shopping-cart/entities/shopping-cart-detail.entity';
 import { LinkImage } from 'src/global/LinkImage';
 import { OrderDetailEntity } from 'src/modules/order/entities/orderDetail.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
@@ -16,6 +17,9 @@ export class ProductEntity {
   @Column({ type: 'int', default: 0 })
   stockQuantity: number;
 
+  @Column({ type: 'int', default: 0 })
+  stockReserved: number;
+
   @Column({ type: 'json', nullable: false })
   image: LinkImage;
 
@@ -25,6 +29,13 @@ export class ProductEntity {
   @Column({ type: 'float', nullable: false })
   price: number;
 
-  @OneToMany(() => OrderDetailEntity, (d) => d.product)
-  orderDetails: OrderDetailEntity[]; // This should be replaced with the actual type of orderDetails, e.g., OrderDetailEntity[]
+  @OneToMany(() => OrderDetailEntity, (d) => d.product, {
+    onDelete: 'CASCADE',
+  })
+  orderDetails: OrderDetailEntity[];
+
+  @OneToMany(() => ShoppingCartDetailEntity, (d) => d.product, {
+    onDelete: 'CASCADE',
+  })
+  shoppingCartDetail: ShoppingCartDetailEntity[];
 }

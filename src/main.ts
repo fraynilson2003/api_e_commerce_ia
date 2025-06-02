@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as morgan from 'morgan';
+import * as express from 'express';
 
 dotenv.config();
 
@@ -12,7 +13,17 @@ async function bootstrap() {
 
   const PORT = Number(process.env.PORT || 4000);
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'verbose', 'fatal', 'debug'],
+  });
+
+  app.setGlobalPrefix('api');
+
+  //webhook for stripe
+  app.use('/api/order/confirm/webhook/stripe', express.raw({ type: '*/*' })); // <- add this!
+
+  app.use(morgan('dev'));
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: false, // Remueve propiedades que no están en el DTO
@@ -26,22 +37,19 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.setGlobalPrefix('api');
-
   const config = new DocumentBuilder()
     .setTitle('API e-commerce ia')
     .setDescription('api de e-commerce asistido con ia')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
     },
   });
-
-  app.use(morgan('dev'));
 
   await app.listen(PORT);
   console.log(`************ Server Running on Port ${PORT} ************`);

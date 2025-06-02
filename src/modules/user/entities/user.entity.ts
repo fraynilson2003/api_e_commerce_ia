@@ -1,6 +1,14 @@
 import { OrderEntity } from 'src/modules/order/entities/order.entity';
 import { PermissionUser } from '@src/modules/permission/permissionUser.interface';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { ShoppingCartEntity } from '@src/modules/shopping-cart/entities/shopping-cart.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -31,9 +39,20 @@ export class UserEntity {
   @Column({ type: 'json', nullable: false })
   permissions: PermissionUser;
 
-  @OneToMany(() => OrderEntity, (order) => order.user)
+  @OneToMany(() => OrderEntity, (order) => order.user, {
+    onDelete: 'CASCADE',
+  })
   orders: OrderEntity[];
 
-  @OneToMany(() => OrderEntity, (order) => order.employee)
+  @OneToMany(() => OrderEntity, (order) => order.employee, {
+    onDelete: 'CASCADE',
+  })
   ordersEmployee: OrderEntity[];
+
+  @OneToOne(() => ShoppingCartEntity, (s) => s.user, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  shoppingCart: ShoppingCartEntity;
 }

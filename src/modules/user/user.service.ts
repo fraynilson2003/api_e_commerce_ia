@@ -11,6 +11,7 @@ import * as bcryptjs from 'bcryptjs';
 import { UserToken } from './userToken.interface';
 import { expirationToken } from './timeExpiration';
 import { defaultPermissionUser } from './defaultPermissionUser';
+import { ShoppingCartEntity } from '../shopping-cart/entities/shopping-cart.entity';
 
 @Injectable()
 export class UserService {
@@ -43,6 +44,17 @@ export class UserService {
     return this.userRepository.findOne({
       where: { id },
       select: ['id', 'permissions', 'isAdmin'],
+    });
+  }
+
+  async getUserDetail(id: number) {
+    return await this.userRepository.findOne({
+      where: {
+        id,
+      },
+      relations: {
+        shoppingCart: true,
+      },
     });
   }
 
@@ -96,26 +108,39 @@ export class UserService {
     const salt = await bcryptjs.genSalt(10);
     const hashPassword = await bcryptjs.hash(input.password, salt);
 
-    const createUser = this.userRepository.create({
-      email: input.email,
-      username: input.username,
-      salt: salt,
-      password: hashPassword,
-      firstName: input.firstName,
-      isAdmin: input.isAdmin,
-      lastName: input.lastName,
-      permissions: defaultPermissionUser,
-    });
+    const transaction = await this.userRepository.manager.transaction(
+      async (manager) => {
+        const createUser = manager.create(UserEntity, {
+          email: input.email,
+          username: input.username,
+          salt: salt,
+          password: hashPassword,
+          firstName: input.firstName,
+          isAdmin: input.isAdmin,
+          lastName: input.lastName,
+          permissions: defaultPermissionUser,
+        });
 
-    const user = await this.userRepository.save(createUser);
+        const user = await manager.save(UserEntity, createUser);
 
-    const token = await this.generateToken({
-      email: user.email,
-      id: user.id,
-      isAdmin: user.isAdmin,
-    });
+        //cart
+        const createShoppingCart = manager.create(ShoppingCartEntity, {
+          user: user,
+        });
 
-    return token;
+        await manager.save(ShoppingCartEntity, createShoppingCart);
+
+        const token = await this.generateToken({
+          email: user.email,
+          id: user.id,
+          isAdmin: user.isAdmin,
+        });
+
+        return token;
+      },
+    );
+
+    return transaction;
   }
 
   async findAll() {

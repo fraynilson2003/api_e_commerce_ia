@@ -13,5 +13,13 @@ export interface PermissionUser {
   order: {
     createMyOrder: boolean;
     createOtherOrder: boolean;
+    editMyOrder: boolean;
+    editOtherOrder: boolean;
+    deleteOtherOrder: boolean;
+  };
+  shoppingCart: {
+    read: boolean;
+    editMyCart: boolean;
+    editOtherCart: boolean;
   };
 }

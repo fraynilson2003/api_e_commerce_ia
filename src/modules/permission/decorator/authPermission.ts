@@ -4,7 +4,7 @@ import { AuthGuard } from '../guard/auth.guard';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { PermissionGuard } from '../guard/permission.guard';
 
-export function PermissionAuth(rules: PermissionRules) {
+export function AuthPermission(rules: PermissionRules) {
   return applyDecorators(
     ApiBearerAuth(),
     ApiOperation({
