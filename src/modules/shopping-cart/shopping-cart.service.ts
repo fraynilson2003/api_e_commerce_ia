@@ -2,14 +2,51 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { EntityManager } from 'typeorm';
 import { ShoppingCartEntity } from './entities/shopping-cart.entity';
-import { AddProductCartDto } from './dto/edit-product-cart.dto';
+import {
+  EditProductCartDetailDto,
+  EditProductCartDto,
+} from './dto/edit-product-cart.dto';
 import { ShoppingCartDetailEntity } from './entities/shopping-cart-detail.entity';
 
 @Injectable()
 export class ShoppingCartService {
   constructor(private readonly manager: EntityManager) {}
 
-  async editProductCart(userId: number, { products }: AddProductCartDto) {
+  async getCartByUserId(userId: number) {
+    const findCart = await this.manager.findOne(ShoppingCartEntity, {
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      relations: {
+        user: true,
+        details: {
+          product: true,
+        },
+      },
+    });
+
+    if (!findCart) {
+      throw new NotFoundException('Cart not found');
+    }
+
+    return findCart;
+  }
+
+  async editProductCart(userId: number, { products }: EditProductCartDto) {
+    const groupedMap = new Map<number, EditProductCartDetailDto>();
+
+    for (const item of products) {
+      if (groupedMap.has(item.productId)) {
+        groupedMap.get(item.productId)!.quantity += item.quantity;
+      } else {
+        groupedMap.set(item.productId, { ...item }); // Clon para evitar mutar el original
+      }
+    }
+
+    const groupedProducts = Array.from(groupedMap.values());
+
     const transaction = await this.manager.transaction(async (manager) => {
       const findCart = await manager.findOne(ShoppingCartEntity, {
         where: {
@@ -34,7 +71,7 @@ export class ShoppingCartService {
       });
 
       await Promise.all(
-        products.map(async (p) => {
+        groupedProducts.map(async (p) => {
           const create = manager.create(ShoppingCartDetailEntity, {
             product: {
               id: p.productId,

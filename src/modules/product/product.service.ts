@@ -56,4 +56,12 @@ export class ProductService {
   async findAll() {
     return this.productRepository.find();
   }
+
+  async getById(id: string | number) {
+    const isNumeric = /^\d+$/.test(id.toString());
+
+    return this.productRepository.findOneOrFail({
+      where: isNumeric ? { id: Number(id) } : { slug: String(id) },
+    });
+  }
 }

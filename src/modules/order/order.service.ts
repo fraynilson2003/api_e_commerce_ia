@@ -1,21 +1,27 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { StripeService } from '../stripe/stripe.service';
-import { CreatePreOrderDto } from './dto/create-preorder.dto';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { PaymentService } from '../payment/payment.service';
+import { CreatePaymentAttemptDto } from './dto/create-payment-attempt.dto';
 import { Repository } from 'typeorm';
 import { OrderEntity } from './entities/order.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrderDetailEntity } from './entities/orderDetail.entity';
-import { EstatusOrder } from './statusOrder.enum';
+import { StatusOrder } from './statusOrder.enum';
 import { ProductEntity } from '../product/entities/product.entity';
 import { UserEntity } from '../user/entities/user.entity';
 import { ConfirmOrderDto } from './dto/confirm-order.dto';
 import Stripe from 'stripe';
 import { Request, Response } from 'express';
+import { PaymentMethod } from './enum/payment-method.enum';
+import { ShoppingCartDetailEntity } from '../shopping-cart/entities/shopping-cart-detail.entity';
 
 @Injectable()
 export class OrderService {
   constructor(
-    private readonly stripeService: StripeService,
+    private readonly paymentService: PaymentService,
     @InjectRepository(OrderEntity)
     private readonly orderRepository: Repository<OrderEntity>,
   ) {}
@@ -34,7 +40,7 @@ export class OrderService {
     return order;
   }
 
-  async createPreOrder(input: CreatePreOrderDto, userId: number) {
+  async createPaymentAttempt(input: CreatePaymentAttemptDto, userId: number) {
     const transaction = await this.orderRepository.manager.transaction(
       async (manager) => {
         const findUser = await manager.findOneByOrFail(UserEntity, {
@@ -43,7 +49,8 @@ export class OrderService {
 
         const createOrder = manager.create(OrderEntity, {
           user: findUser,
-          state: EstatusOrder.RESERVED,
+          state: StatusOrder.RESERVED,
+          paymentMethod: input.paymentMethod,
           totalCost: 1,
         });
 
@@ -52,15 +59,80 @@ export class OrderService {
         //detalles
         let totalCost = 0;
 
+        //antes de crear la nueva pre orden cancelamos las preordenes anteriores
+        const lastOrders = await manager.find(OrderEntity, {
+          where: {
+            user: {
+              id: userId,
+            },
+            state: StatusOrder.RESERVED,
+          },
+          relations: {
+            user: true,
+            orderDetails: {
+              product: true,
+            },
+          },
+        });
+
+        //cambiamos estado y liberamos stock
+        for (let index = 0; index < lastOrders.length; index++) {
+          const ord = lastOrders[index];
+          ord.state = StatusOrder.CANCELLED;
+
+          await manager.save(ord);
+          await Promise.all(
+            ord.orderDetails.map(async (det) => {
+              const product = await manager.findOneOrFail(ProductEntity, {
+                where: {
+                  id: det.product.id,
+                },
+              });
+
+              //avisar a los trabajadores y desarrolladores si se llega a dar este error
+              if (product.stockReserved < det.quantity) {
+                throw new ConflictException(
+                  'Error in quantuty stock reserverd',
+                );
+              }
+
+              product.stockQuantity += det.quantity;
+              product.stockReserved -= det.quantity;
+
+              await manager.save(product);
+            }),
+          );
+        }
+
+        const findDetails = await manager.find(ShoppingCartDetailEntity, {
+          where: {
+            shoppingCart: {
+              user: {
+                id: userId,
+              },
+            },
+          },
+          relations: {
+            shoppingCart: {
+              user: true,
+            },
+            product: true,
+          },
+        });
+
         await Promise.all(
-          input.details.map(async (detail) => {
+          findDetails.map(async (detail) => {
             const product = await manager.findOneByOrFail(ProductEntity, {
-              id: detail.productId,
+              id: detail.product.id,
             });
             //precio
             const formatPrice = product.price * 10;
             totalCost += formatPrice * detail.quantity;
-            //stock
+            //stock y verificacion de stock
+            if (product.stockQuantity < detail.quantity) {
+              throw new ConflictException('Insufficient stock');
+            }
+
             product.stockQuantity -= detail.quantity;
             product.stockReserved += detail.quantity;
             await manager.save(product);
@@ -78,20 +150,38 @@ export class OrderService {
           }),
         );
 
-        //creamos clave de pago
-        const secretPayment = await this.stripeService.createIntentPayment(
-          parseFloat((totalCost / 100).toFixed(2)),
-          order.id,
-        );
+        //creamos clave de pago dependiendo del método de pago
+        const formatTotalCost = parseFloat((totalCost / 10).toFixed(2));
+        if (input.paymentMethod === PaymentMethod.STRIPE) {
+          const secretPayment =
+            await this.paymentService.createStripePaymentAttempt(
+              formatTotalCost,
+              order.id,
+            );
+          if (!secretPayment.client_secret) {
+            throw new InternalServerErrorException(
+              'Error creando pago para stripe',
+            );
+          }
+          order.paymentReferenceId = secretPayment.id;
+          order.paymentReference = secretPayment.client_secret;
+        } else if (input.paymentMethod === PaymentMethod.MERCADOPAGO) {
+          const preferenceResponse =
+            await this.paymentService.createMercadoPagoPreference(
+              formatTotalCost,
+              order.id,
+            );
 
-        if (!secretPayment.client_secret) {
-          throw new InternalServerErrorException(
-            'Error creando pago para stripe',
-          );
+          console.log('*********************preferenceResponse');
+          console.log(preferenceResponse);
+
+          order.paymentReferenceId = preferenceResponse.id;
+          order.paymentReference = preferenceResponse.init_point;
         }
 
-        order.clientSecretPayment = secretPayment.client_secret;
-        order.totalCost = parseFloat((totalCost / 100).toFixed(2));
+        //actualizamos el total de la orden
+
+        order.totalCost = formatTotalCost;
         order = await manager.save(order);
 
         const detail = await manager.findOneOrFail(OrderEntity, {
@@ -133,7 +223,7 @@ export class OrderService {
           throw new InternalServerErrorException('Error confirmando compra');
         }
 
-        findOrder.state = EstatusOrder.SUCCESS;
+        findOrder.state = StatusOrder.SUCCESS;
         await manager.save(findOrder);
 
         //modificamos el sotck
@@ -168,10 +258,10 @@ export class OrderService {
     let event: Stripe.Event;
 
     try {
-      event = this.stripeService.stripe.webhooks.constructEvent(
+      event = this.paymentService.stripe.webhooks.constructEvent(
         req.body,
         signature,
-        this.stripeService.stripeWebhookSecret,
+        this.paymentService.stripeWebhookSecret,
       );
     } catch (err) {
       console.error('⚠️  Webhook signature verification failed.', err.message);

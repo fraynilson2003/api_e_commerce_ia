@@ -7,7 +7,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { OrderDetailEntity } from './orderDetail.entity';
-import { EstatusOrder } from '../statusOrder.enum';
+import { StatusOrder } from '../statusOrder.enum';
+import { PaymentMethod } from '../enum/payment-method.enum';
 
 @Entity('order')
 export class OrderEntity {
@@ -27,15 +28,24 @@ export class OrderEntity {
 
   @Column({
     type: 'enum',
-    enum: EstatusOrder,
+    enum: StatusOrder,
   })
-  state: EstatusOrder;
+  state: StatusOrder;
 
   @Column({ type: 'float', nullable: false })
   totalCost: number;
 
-  @Column({ type: 'varchar', nullable: true })
-  clientSecretPayment: string;
+  @Column({
+    type: 'enum',
+    enum: PaymentMethod,
+  })
+  paymentMethod: PaymentMethod;
+
+  @Column({ type: 'text', nullable: true })
+  paymentReferenceId?: string;
+
+  @Column({ type: 'text', nullable: true })
+  paymentReference?: string;
 
   @OneToMany(() => OrderDetailEntity, (detail) => detail.order, {
     onDelete: 'CASCADE',

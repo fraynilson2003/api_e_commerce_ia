@@ -10,7 +10,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { OrderModule } from './modules/order/order.module';
 import { UtilitiesModule } from './global/utilities.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
-import { StripeModule } from './modules/stripe/stripe.module';
+import { PaymentModule } from './modules/payment/payment.module';
 import { ShoppingCartModule } from './modules/shopping-cart/shopping-cart.module';
 
 @Module({
@@ -28,7 +28,7 @@ import { ShoppingCartModule } from './modules/shopping-cart/shopping-cart.module
     OrderModule,
     UtilitiesModule,
     CloudinaryModule,
-    StripeModule,
+    PaymentModule,
     ShoppingCartModule,
   ],
   controllers: [],

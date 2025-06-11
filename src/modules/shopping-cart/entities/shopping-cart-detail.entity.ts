@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { ShoppingCartEntity } from './shopping-cart.entity';
 import { ProductEntity } from '@src/modules/product/entities/product.entity';
 
@@ -21,7 +15,7 @@ export class ShoppingCartDetailEntity {
   })
   shoppingCart: ShoppingCartEntity;
 
-  @OneToMany(() => ProductEntity, (p) => p.shoppingCartDetail, {
+  @ManyToOne(() => ProductEntity, (p) => p.shoppingCartDetail, {
     onDelete: 'CASCADE',
   })
   product: ProductEntity;

@@ -11,7 +11,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
-import { CreatePreOrderDto } from './dto/create-preorder.dto';
+import { CreatePaymentAttemptDto } from './dto/create-payment-attempt.dto';
 import { ActiveUser } from '@src/global/active-user.decorator';
 import { UserToken } from '../user/userToken.interface';
 import { AuthPermission } from '../permission/decorator/authPermission';
@@ -27,16 +27,16 @@ export class OrderController {
     return await this.orderService.getById(Number(id));
   }
 
-  @Post('pre-order')
+  @Post('payment-attempt')
   @AuthPermission({
     type: 'order',
     action: 'createMyOrder',
   })
   async createPreOrder(
-    @Body() input: CreatePreOrderDto,
+    @Body() input: CreatePaymentAttemptDto,
     @ActiveUser() user: UserToken,
   ) {
-    return await this.orderService.createPreOrder(input, user.id);
+    return await this.orderService.createPaymentAttempt(input, user.id);
   }
 
   @Post('confirm')

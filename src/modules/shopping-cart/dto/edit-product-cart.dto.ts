@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, Min } from 'class-validator';
 
-export class AddProductCartDetailDto {
+export class EditProductCartDetailDto {
   @ApiProperty({
     type: Number,
     description: 'ID of the product to be added to the cart',
@@ -18,11 +18,11 @@ export class AddProductCartDetailDto {
   quantity: number;
 }
 
-export class AddProductCartDto {
+export class EditProductCartDto {
   @ApiProperty({
-    type: [AddProductCartDetailDto],
+    type: [EditProductCartDetailDto],
     description: 'List of products to be added to the cart',
   })
   @IsNotEmpty()
-  products: AddProductCartDetailDto[];
+  products: EditProductCartDetailDto[];
 }

@@ -1,7 +1,9 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
+  Param,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -36,6 +38,14 @@ export class ProductController {
   @Get()
   async findAll() {
     return this.productService.findAll();
+  }
+
+  @Get('/:id')
+  async getById(@Param('id') id: any) {
+    if (!id) {
+      throw new BadRequestException('id is required');
+    }
+    return this.productService.getById(id);
   }
 
   @Post('add-stock')

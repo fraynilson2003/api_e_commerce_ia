@@ -1,4 +1,4 @@
-export enum EstatusOrder {
+export enum StatusOrder {
   RESERVED = 'RESERVED',
   FAILED = 'FAILED',
   CANCELLED = 'CANCELLED',
