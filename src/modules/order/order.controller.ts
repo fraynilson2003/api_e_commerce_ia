@@ -57,11 +57,8 @@ export class OrderController {
     type: 'order',
     action: 'createMyOrder',
   })
-  async confirmOrder(
-    @Body() input: ConfirmOrderDto,
-    @ActiveUser() user: UserToken,
-  ) {
-    return await this.orderService.confirmOrder(input, user.id);
+  async confirmOrder(@Body() input: ConfirmOrderDto) {
+    return await this.orderService.confirmOrder(input);
   }
 
   @Post('confirm/webhook/stripe')

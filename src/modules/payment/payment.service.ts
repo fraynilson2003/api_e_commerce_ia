@@ -10,6 +10,7 @@ import Decimal from 'decimal.js';
 import Stripe from 'stripe';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import axios from 'axios';
+import { CreateAttemptMercadoPagoDto } from './create-attempt-mercado-pago.dto';
 
 @Injectable()
 export class PaymentService {
@@ -73,11 +74,11 @@ export class PaymentService {
   }
 
   // Mercado Pago
-  async createMercadoPagoPreference(
-    amount: number,
-    orderId: number,
-    description?: string,
-  ) {
+  async createMercadoPagoPreference({
+    amount,
+    orderId,
+    description,
+  }: CreateAttemptMercadoPagoDto) {
     const preference = new Preference(this.mercadoPago);
 
     const amountInCents = new Decimal(amount)
@@ -96,7 +97,7 @@ export class PaymentService {
           },
         ],
         metadata: {
-          orderId: orderId.toString(),
+          order_id: orderId.toString(),
           description: description,
         },
         back_urls: {

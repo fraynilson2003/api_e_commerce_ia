@@ -167,10 +167,10 @@ export class OrderService {
           order.paymentReference = secretPayment.client_secret;
         } else if (input.paymentMethod === PaymentMethod.MERCADOPAGO) {
           const preferenceResponse =
-            await this.paymentService.createMercadoPagoPreference(
-              formatTotalCost,
-              order.id,
-            );
+            await this.paymentService.createMercadoPagoPreference({
+              amount: formatTotalCost,
+              orderId: order.id,
+            });
 
           order.paymentReferenceId = preferenceResponse.id;
           order.paymentReference = preferenceResponse.init_point;
@@ -198,15 +198,12 @@ export class OrderService {
     return transaction;
   }
 
-  async confirmOrder(input: ConfirmOrderDto, userId: number) {
+  async confirmOrder(input: ConfirmOrderDto) {
     const transaction = await this.orderRepository.manager.transaction(
       async (manager) => {
         const findOrder = await manager.findOne(OrderEntity, {
           where: {
             id: input.orderId,
-            user: {
-              id: userId,
-            },
           },
           relations: {
             user: true,
@@ -301,11 +298,11 @@ export class OrderService {
 
       if (
         paymentData?.status === 'approved' &&
-        paymentData?.metadata?.orderId
+        paymentData?.metadata?.order_id
       ) {
-        const orderId = parseInt(paymentData.metadata.orderId);
+        const orderId = parseInt(paymentData.metadata.order_id);
 
-        await this.confirmOrder({ orderId }, paymentData.metadata.userId); // Asegurate de guardar userId en metadata
+        await this.confirmOrder({ orderId }); // Asegurate de guardar userId en metadata
 
         console.log(`✅ Orden ${orderId} confirmada por MercadoPago`);
       } else {
