@@ -287,14 +287,35 @@ export class OrderService {
     try {
       const rawBody = req.body;
       const parsedBody = JSON.parse(rawBody.toString('utf-8'));
+      const paymentId = parsedBody?.data?.id;
 
-      console.log('*******************parsedBody');
-      console.log(parsedBody);
+      if (!paymentId) {
+        return res.status(400).json({ error: 'Invalid payment ID' });
+      }
+
+      const paymentData =
+        await this.paymentService.getPaymentByIdForMercadoPago(paymentId); // Debe llamar a /v1/payments/:id con el token
+
+      console.log('**********************paymentData');
+      console.log(paymentData);
+
+      if (
+        paymentData?.status === 'approved' &&
+        paymentData?.metadata?.orderId
+      ) {
+        const orderId = parseInt(paymentData.metadata.orderId);
+
+        await this.confirmOrder({ orderId }, paymentData.metadata.userId); // Asegurate de guardar userId en metadata
+
+        console.log(`✅ Orden ${orderId} confirmada por MercadoPago`);
+      } else {
+        console.log(`⚠️ Pago ${paymentId} no aprobado o sin metadata`);
+      }
+
+      return res.status(200).json({ received: true });
     } catch (err) {
-      console.error('⚠️  Webhook signature verification failed.', err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
+      console.error('⚠️  Error en Webhook MercadoPago:', err.message);
+      return res.status(500).send('Internal server error');
     }
-
-    res.send({ received: true });
   }
 }

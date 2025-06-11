@@ -9,6 +9,7 @@ import {
 import Decimal from 'decimal.js';
 import Stripe from 'stripe';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
+import axios from 'axios';
 
 @Injectable()
 export class PaymentService {
@@ -107,5 +108,17 @@ export class PaymentService {
     });
 
     return payment;
+  }
+
+  async getPaymentByIdForMercadoPago(paymentId: string) {
+    const response = await axios.get(
+      `https://api.mercadopago.com/v1/payments/${paymentId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${this.mercadoPagoAccessToken}`,
+        },
+      },
+    );
+    return response.data;
   }
 }
