@@ -286,33 +286,15 @@ export class OrderService {
     res.send({ received: true });
   }
 
-  async webhookConfirmMercagoPagoPayment(
-    req: Request,
-    res: Response,
-    signature: string,
-  ) {
-    let event: Stripe.Event;
-
+  async webhookConfirmMercagoPagoPayment(req: Request, res: Response) {
     try {
-      event = this.paymentService.stripe.webhooks.constructEvent(
-        req.body,
-        signature,
-        this.paymentService.stripeWebhookSecret,
-      );
+      const body = req.body;
+
+      console.log('***********************body');
+      console.log(body);
     } catch (err) {
       console.error('⚠️  Webhook signature verification failed.', err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-
-    // Manejar evento específico
-    if (event.type === 'payment_intent.succeeded') {
-      const paymentIntent = event.data.object as Stripe.PaymentIntent;
-
-      const orderId = paymentIntent.metadata?.orderId;
-
-      if (orderId) {
-        console.log(`✅ Orden ${orderId} marcada como pagada.`);
-      }
     }
 
     res.send({ received: true });

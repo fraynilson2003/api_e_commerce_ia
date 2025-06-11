@@ -21,6 +21,10 @@ async function bootstrap() {
 
   //webhook for stripe
   app.use('/api/order/confirm/webhook/stripe', express.raw({ type: '*/*' })); // <- add this!
+  app.use(
+    '/api/order/confirm/webhook/mercado-pago',
+    express.raw({ type: '*/*' }),
+  ); // <- add this!
 
   app.use(morgan('dev'));
 
