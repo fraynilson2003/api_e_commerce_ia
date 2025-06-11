@@ -53,11 +53,28 @@ export class OrderController {
 
   @Post('confirm/webhook/stripe')
   @HttpCode(HttpStatus.OK)
-  async handleStripeWebhook(
+  async webhookStripePagoPayment(
     @Req() req: Request,
     @Res() res: Response,
     @Headers('stripe-signature') signature: string,
   ) {
-    return await this.orderService.confirmWebhookStripe(req, res, signature);
+    return await this.orderService.webhookStripePagoPayment(
+      req,
+      res,
+      signature,
+    );
+  }
+  @Post('confirm/webhook/mercado-pago')
+  @HttpCode(HttpStatus.OK)
+  async webhookConfirmMercagoPagoPayment(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Headers('stripe-signature') signature: string,
+  ) {
+    return await this.orderService.webhookConfirmMercagoPagoPayment(
+      req,
+      res,
+      signature,
+    );
   }
 }
