@@ -172,9 +172,6 @@ export class OrderService {
               order.id,
             );
 
-          console.log('*********************preferenceResponse');
-          console.log(preferenceResponse);
-
           order.paymentReferenceId = preferenceResponse.id;
           order.paymentReference = preferenceResponse.init_point;
         }
@@ -288,10 +285,11 @@ export class OrderService {
 
   async webhookConfirmMercagoPagoPayment(req: Request, res: Response) {
     try {
-      const body = req.body;
+      const rawBody = req.body;
+      const parsedBody = JSON.parse(rawBody.toString('utf-8'));
 
-      console.log('***********************body');
-      console.log(body);
+      console.log('*******************parsedBody');
+      console.log(parsedBody);
     } catch (err) {
       console.error('⚠️  Webhook signature verification failed.', err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);
